@@ -1,6 +1,6 @@
 =begin
   -----------------------------------------------------------------------------------------------------
-    This code was created in collaboration with my colleague Lucía Muñoz Gil.
+    This code was created IN COLLABORATION with my colleague Lucía Muñoz Gil.
     Miguel La Iglesia Mirones, Assignment 1, Bioinformatic Programming Challenges.
     Master in Computational Biology, UPM.
   ---------------------------------------------------------------------------------------------------
@@ -31,13 +31,13 @@ else
     exit 1
 end
 
-# TASK 1. SIMULATION OF 7 GRAMMES SEED PLANTING . RECORDING GENEBANK NEW STATE IN FILE 'seed_stock_data.tsv'
+# TASK 1. SIMULATION OF 7 GRAMMES SEED PLANTING . RECORDING GENEBANK NEW STATE IN FILE 'new_stock_file.tsv'
 
 # Create a new instance for class SeedStockDatabase
 sesion = SeedStockDatabase.new  
 
-sesion.load_from_file(seed_stock_file)    # Reads seed_stock_data.tsv file to create class SeedStock instances, adding those new instances
-                                          # to a hash that allows to access individual SeedStock objects through the stock ID
+sesion.load_from_file(seed_stock_file)    # Reads seed_stock_data.tsv file to create class SeedStock instances. These
+                                          # are added to a hash for easily accessing to them through the stock ID
 
 sesion.stock_instances.each do |_key, gene_object|   # For each class SeedStock instance, it is called a method that updates
     gene_object.plant_seeds(7)                       # the number of grammes remaining and the last date planted
@@ -48,10 +48,10 @@ sesion.write_database(new_file_path)  # New state of the genebank is written in 
 
 # TASK 2. DETERMINE GENETICALLY LINKED GENES WITH CHI-SQUARE TEST. 
 
-sesion.load_from_file(gene_info)   # Reads 'gene_information.tsv' file to create class Gene instances, adding them
-                                   # to a hash that allows to access individual Gene objects based on the gene ID.
+sesion.load_from_file(gene_info)   # Reads 'gene_information.tsv' file to create class Gene instances. These
+                                   # are added to a hash for easily accessing to them through the gene ID
 
-# File 'cross_data.tsv' is read to create class HybridCross instances. 
+# File 'cross_data.tsv' is read to create class HybridCross instances.
 # Then, chi-square test is performed for each of the instances to determine genetically linked genes.
 File.open(cross_data, "r").each.with_index do |line, line_num|
     
@@ -66,8 +66,7 @@ File.open(cross_data, "r").each.with_index do |line, line_num|
         f2_p2:f2p2.to_f,
         f2_p1p2:f2p1p2.to_f)
 
-    x_squared = crossing.chi_squared() # This method is called for each of the instances to calculate
-                                       # chi-square value
+    x_squared = crossing.chi_squared() # This method is called for each of the instances to calculate chi-square
 
     if x_squared > 7.82 # If chi-square value is greater than 7.85, then genes are
                         # considered as genetically linked (freedom degrees = 3, p < 0.05)
@@ -79,11 +78,11 @@ File.open(cross_data, "r").each.with_index do |line, line_num|
 
         # Gets the gene name from those gene IDs genetically linked. It uses the gene ID to get the corresponding
         # instance in class Gene, and with that instance it obtains the gene name.
-        linked_genename1 = sesion.get_gene_info(linked_gene1)  
+        linked_genename1 = sesion.get_gene_info(linked_gene1)
         linked_genename2 = sesion.get_gene_info(linked_gene2)
         
-        # Adds a new property '@linked_to' for those instances in class Gene that have geneticaly linked genes.
-        linked_genename1.linked_to = (linked_genename2.name)   
+        # Adds a new property '@linked_to' for those Gene class instances that have geneticaly linked genes.
+        linked_genename1.linked_to = (linked_genename2.name)
         linked_genename2.linked_to = (linked_genename1.name)
         
         # Prints those linked genes considering the chi-square value 
@@ -100,7 +99,7 @@ puts
 # with genetically linked genes (with atribute ':linked_to'), it prints the corresponding linked gene.
 
 sesion.gene_instances.each do |_key, gene_object|
-    if gene_object.respond_to?(:linked_to) && gene_object.linked_to
+    if gene_object.respond_to?(:linked_to) && gene_object.linked_to # instance is asked if it has the property '@linked_to' and if it is accesible
         puts "#{gene_object.name} is linked to #{gene_object.linked_to}"
     end
 end

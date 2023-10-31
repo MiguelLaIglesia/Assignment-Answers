@@ -23,11 +23,11 @@ class SeedStock
     end
 
         # Input: number of grams to be planted
-        # Output: number of grams remmaining and last planted day are updated.
+        # Output: number of grams remmaining and last planted day (as instances' properties) are updated.
 
-        def plant_seeds(gr_planted)
-            @last_planted = Date.today.strftime("%e/%m/%Y") # Updates last planted date using library 'date'
-            if @grams_remaining > gr_planted # Verifies if there is enough grams in stock to be plant
+        def plant_seeds(gr_planted) # Define number of grams planted with gr_planted
+            @last_planted = Date.today.strftime("%e/%m/%Y") # Updates last planted day
+            if @grams_remaining > gr_planted # Verifies if there is enough grams in stock to be planted
                 @grams_remaining -= gr_planted  # Updates grams remaining in stock
             else
                 warn "WARNING: we have run out of Seed Stock #{@seed_stock_ID}. #{@grams_remaining} grams were planted" 

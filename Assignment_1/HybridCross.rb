@@ -1,4 +1,4 @@
-# Class HybridCross represents the different crosses with their relevant information.
+# Class HybridCross represents the different seed stock crosses with their relevant information.
 # It allows to calculate chi-square in a cross.
 
 class HybridCross
@@ -8,8 +8,8 @@ class HybridCross
 
     # Predefined values for those instance variables
     def initialize(
-        parent1_ID: "XXXX", # The ID of the seed stock of parent 1
-        parent2_ID: "XXXX", # The ID of the seed stock of parent 2
+        parent1_ID: "XXXX", # The seed stock ID of parent 1
+        parent2_ID: "XXXX", # The seed stock ID of parent 2
         f2_wildtype: 0, # Number of observations for wt phenotype in F2
         f2_p1: 0, # Number of observations for parent 1 phenotype in F2
         f2_p2: 0, # Number of observations for parent 2 phenotype in F2
@@ -23,7 +23,7 @@ class HybridCross
         @f2_p1p2  = f2_p1p2
     end
 
-    # No input, it works with intance properties
+    # No explicit input, it works with intance properties
     # Output: chi-square value ('x_squared')
     # Calculates chi-square value using instance properties that referred to the number of observed F2 phenotypes.
     def chi_squared()

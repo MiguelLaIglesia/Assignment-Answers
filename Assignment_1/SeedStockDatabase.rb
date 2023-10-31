@@ -55,7 +55,7 @@ class SeedStockDatabase
                 grams_remaining:grams.to_i)
 
             # This method is called to add the new class SeedStock instance to the hash stored in SeedStockDatabase object
-            add_seed_stock(seed_record)     # Save instance (with info about each record) in hash (to search by ID)
+            add_seed_stock(seed_record)
 
         elsif file == "gene_information.tsv"
 
@@ -74,7 +74,7 @@ class SeedStockDatabase
     end
     end
 
-    # Input: new database file name. 
+    # Input: new database file name.
     # Output: Creates and write the updated values of the genebank.
 
     def write_database(newfile)    
@@ -82,7 +82,7 @@ class SeedStockDatabase
             file.puts @header # Header stored when file reading in 'load_from_file'
 
             # Parse class SeedStock instances using the hash @stock_instances previously created
-            # and uses their properties values to update the database file
+            # and uses their properties values to update the database file (after simluate planting)
             @stock_instances.each_value do |seed|
                 file.puts "#{seed.seed_stock_ID}\t#{seed.mutant_gene_ID}\t#{seed.last_planted}\t#{seed.storage}\t#{seed.grams_remaining}"
             end
