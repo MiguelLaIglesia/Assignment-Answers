@@ -1,3 +1,11 @@
+=begin
+  -----------------------------------------------------------------------------------------------------
+    This code was created IN COLLABORATION with my colleague Lucía Muñoz Gil.
+    Miguel La Iglesia Mirones, Assignment 1, Bioinformatic Programming Challenges.
+    Master in Computational Biology, UPM.
+  ---------------------------------------------------------------------------------------------------
+=end
+
 # Class Gene represents the different genes with their relevant information.
 # It allows to verify proper gene ID format and to store genetically linked genes.
 
