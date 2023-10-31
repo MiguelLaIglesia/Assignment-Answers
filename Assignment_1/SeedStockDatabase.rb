@@ -1,3 +1,11 @@
+=begin
+  -----------------------------------------------------------------------------------------------------
+    This code was created IN COLLABORATION with my colleague Lucía Muñoz Gil.
+    Miguel La Iglesia Mirones, Assignment 1, Bioinformatic Programming Challenges.
+    Master in Computational Biology, UPM.
+  ---------------------------------------------------------------------------------------------------
+=end
+
 # Class SeedStockDatabase represents the entire data base. It allows to read files to create other classes
 # instances. It allows to write updated genebank. It allows to link properties in instances from other classes.
 
