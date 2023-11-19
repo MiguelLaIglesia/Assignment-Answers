@@ -1,0 +1,19 @@
+IMPORTANTEE: BONUS MARKS (to get +2 score) if you create a ‘uso-general’ annotation object that can hold any kind of functional annotation
+
+TASKS:  
+
+    -Create an “InteractionNetwork” Object to contain the members of each network
+
+    -Annotate it with any KEGG Pathways the interaction network members are part of
+
+        both KEGG ID and Pathway Name
+
+    -Annotate it with the GO Terms associated with the total of all genes in the network
+
+        Limit these annotations to the biological process part of the GO Ontology!
+
+        Both GO:ID and GO Term Name
+
+    *Create a report of which members of the gene list are involved in shared networks, and report the KEGG/GO functional annotations of those networks.
+
+IMPORTANTEE: BONUS MARKS (to get +2 score) if you create a ‘uso-general’ annotation object that can hold any kind of functional annotation

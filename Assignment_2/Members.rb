@@ -1,7 +1,9 @@
 require 'json'
 
-# @direct_interactors con attr_accesor y @network con get y set. Aunque @direct_interactors está en initialize
-#PROBLEMA CON EL @network (se va a ir sobrescribiendo a medida que encuentre una nueva)
+#CAMBIOS: def all_members -> self.all_members ,  en add_to_network en   "unless self.get_network.network_members.include?(interactor.uniprot_id)" poner
+# el .include? en vez de .key?
+
+
 class Members
 
     attr_accessor :uniprot_id, :times_searched, :direct_interactors
@@ -31,72 +33,55 @@ class Members
     def get_network
         @network
     end
+
+    def self.all_coexpresed_members
+        @@coexpresed_members
+    end
+
+    def self.all_members
+        @@all_members
+    end
     
     def self.read_from_file(filename) # Leer archivo y crear Members con cada ATG...
         coexpressed_file = File.open(filename, 'r')
         coexpressed_file.readlines.each do |line|
             locus_name=line.chomp
-            address = "http://togows.dbcls.jp/entry/uniprot/#{locus_name}/accessions.json"
-            response = RestClient::Request.execute(  #  or you can use the 'fetch' function we created last class
-                method: :get,
-                url: address)  
-            result = JSON.parse(response.body)
+            togo_address = "http://togows.dbcls.jp/entry/uniprot/#{locus_name}/accessions.json"
+            togo_response = rest_api_request(togo_address)  # search in TOGO db the uniprot id for each locus name
+            result = JSON.parse(togo_response.body)
             if result.is_a?(Array) && result.any?
-                uniprot_id = result.first.first   # get the first uniprot id from list, there might be more than one
+                uniprot_id = result.first.first   
             else
                 puts "No UniProt entry found for locus #{locus_name}. Please remove this entry from gene list"
                 next
             end
-            member = self.new(uniprot_id: uniprot_id)
-            member.gene_id=(locus_name)
+            member = self.new(uniprot_id: uniprot_id)   # create new instance of this class for each gene of the list with uniprotid
+            member.gene_id=(locus_name) # and genename
             @@coexpresed_members << member
         end
     end
 
-    def find_interactors #Coge una instancia Member, busca sus interactores, y los crea (si no existen) añadiéndolos a @direct_interactors
-        intact_address = 'http://www.ebi.ac.uk/Tools/webservices/psicquic/intact/webservices/current/'
-        species = 'species:arabidopsis'
-        formato = 'tab25'
-      
-        address = "#{intact_address}search/interactor/#{@uniprot_id}/?query=#{species}&format=#{formato}"
-        #puts "El miembro #{@uniprot_id} con #{address}"
-        response = RestClient::Request.execute(
-          method: :get,
-          url: address,
-          headers: {'Accept' => 'application/json'})
-      
-        if response.empty? #Si la rpta es en blanco, deja el array vacío
-          #puts "#{member.gene_id} es respuesta en blanco"
+
+    def find_interactors(intact_address=INTACT_BASE_ADDRESS, species=SPECIES, formato=TAB25_FORMAT)
+        intact_address = "#{intact_address}search/interactor/#{@uniprot_id}/?query=#{species}&format=#{formato}"
+        response = rest_api_request(intact_address)
+        if response.empty?
           @direct_interactors = "Response Not Available in IntAct"
           return 1
         end
         response.body.each_line do |line|
             values = line.chomp.split("\t")
-            interactor_1 = values[0].match(/uniprotkb:([OPQ][0-9][A-Z0-9]{3}[0-9])/)
-            interactor_2 = values[1].match(/uniprotkb:([OPQ][0-9][A-Z0-9]{3}[0-9])/)
-
-                #Si mi interactor está en el campo 1 del tab25
-            if !interactor_1.nil? && !interactor_1[1].include?(self.uniprot_id)
-
-                if @@all_members.include?(interactor_1[1]) # Si ya existe
-                    @direct_interactors << @@all_members[interactor_1[1]]
-                else
-                    interactor = self.class.new(uniprot_id: interactor_1[1]) 
-                    @direct_interactors << interactor
-                end # Si todavía no existe
-
-                #Si mi interactor está en el campo 2 del tab25
-            elsif !interactor_2.nil? && !interactor_2[1].include?(self.uniprot_id)
-
-                if @@all_members.key?(interactor_2[1]) # Si ya existe
-                    @direct_interactors << @@all_members[interactor_2[1]]
-                else # Si todavia no existe
-                    interactor = self.class.new(uniprot_id: interactor_2[1])
-                    @direct_interactors << interactor
+            [0,1].each do |id|
+                interactor = extract_xref(values[id])
+                if !interactor.include?(@uniprot_id) && interactor.match(/[OPQ][0-9][A-Z0-9]{3}[0-9]$/)    # check if it not empty or the query interactor
+                    
+                    if @@all_members.key?(interactor) # Si ya existe
+                        @direct_interactors << @@all_members[interactor]
+                    else
+                        interactor = self.class.new(uniprot_id: interactor) 
+                        @direct_interactors << interactor
+                    end # Si todavía no existe
                 end
-
-            else # Si campo 1 y campo 2 fuesen mi query: este else es importante por si fuese la query A y fuese A-A
-                next
             end
         end
     end
@@ -106,10 +91,10 @@ class Members
             return 1
         end
         @direct_interactors.each do |interactor|
-                unless self.get_network.network_members.key?(interactor.uniprot_id) #Si ya existe en la red del AT..., pasa. CREO QUE PODRÍAS PREGUNTAR SI ESTÁ ESE OBJETO INTERACTOR DIRECTAMENTE
-                    interactor.set_network=(self.get_network)
-                    self.get_network.add_member(interactor)
-                end
+            unless self.get_network.network_members.include?(interactor.uniprot_id)
+                interactor.set_network=(self.get_network)
+                self.get_network.add_member(interactor)
+            end
         end
     end
 
@@ -117,21 +102,13 @@ class Members
         @times_searched += 1
     end
 
-    def self.all_coexpresed_members
-        return @@coexpresed_members
-    end
 
-    def self.all_members
-        return @@all_members
-    end
 
     def eql?(other) 
         self.uniprot_id == other.uniprot_id if other.is_a?(Networks) # just to make sure we are comparing objects of the same class
     end
 
-    def hash    # this code generates a hash code based on the attribute values
-        # it is important for the correct fucntioning of hash-based collections (like Ruby's Hash),
-        # since we are storing our netmembers in a hash, we do this so when we look for duplicates, we do it by id
+    def hash
         @uniprot_id.hash
     end
 end
