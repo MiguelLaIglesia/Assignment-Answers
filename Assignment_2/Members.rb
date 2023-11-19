@@ -59,7 +59,7 @@ class Members
         formato = 'tab25'
       
         address = "#{intact_address}search/interactor/#{@uniprot_id}/?query=#{species}&format=#{formato}"
-        puts "El miembro #{@uniprot_id} con #{address}"
+        #puts "El miembro #{@uniprot_id} con #{address}"
         response = RestClient::Request.execute(
           method: :get,
           url: address,
@@ -67,48 +67,49 @@ class Members
       
         if response.empty? #Si la rpta es en blanco, deja el array vacío
           #puts "#{member.gene_id} es respuesta en blanco"
-          @direct_interactors = []
-        else
-            response.body.each_line do |line|
-                values = line.chomp.split("\t")
-                interactor_1 = values[0].match(/uniprotkb:([OPQ][0-9][A-Z0-9]{3}[0-9])/)
-                interactor_2 = values[1].match(/uniprotkb:([OPQ][0-9][A-Z0-9]{3}[0-9])/)
+          @direct_interactors = "Response Not Available in IntAct"
+          return 1
+        end
+        response.body.each_line do |line|
+            values = line.chomp.split("\t")
+            interactor_1 = values[0].match(/uniprotkb:([OPQ][0-9][A-Z0-9]{3}[0-9])/)
+            interactor_2 = values[1].match(/uniprotkb:([OPQ][0-9][A-Z0-9]{3}[0-9])/)
 
                 #Si mi interactor está en el campo 1 del tab25
-                if !interactor_1.nil? && !interactor_1[1].include?(self.uniprot_id)
+            if !interactor_1.nil? && !interactor_1[1].include?(self.uniprot_id)
 
-                    if @@all_members.include?(interactor_1[1]) # Si ya existe
-                        @direct_interactors << @@all_members[interactor_1[1]]
-                    else
-                        interactor = self.class.new(uniprot_id: interactor_1[1]) 
-                        @direct_interactors << interactor
-                    end # Si todavía no existe
+                if @@all_members.include?(interactor_1[1]) # Si ya existe
+                    @direct_interactors << @@all_members[interactor_1[1]]
+                else
+                    interactor = self.class.new(uniprot_id: interactor_1[1]) 
+                    @direct_interactors << interactor
+                end # Si todavía no existe
 
                 #Si mi interactor está en el campo 2 del tab25
-                elsif !interactor_2.nil? && !interactor_2[1].include?(self.uniprot_id)
+            elsif !interactor_2.nil? && !interactor_2[1].include?(self.uniprot_id)
 
-                    if @@all_members.key?(interactor_2[1]) # Si ya existe
-                        @direct_interactors << @@all_members[interactor_2[1]]
-                    else # Si todavia no existe
-                        interactor = self.class.new(uniprot_id: interactor_2[1])
-                        @direct_interactors << interactor
-                    end
-
-                else # Si campo 1 y campo 2 fuesen mi query: este else es importante por si fuese la query A y fuese A-A
-                    next
+                if @@all_members.key?(interactor_2[1]) # Si ya existe
+                    @direct_interactors << @@all_members[interactor_2[1]]
+                else # Si todavia no existe
+                    interactor = self.class.new(uniprot_id: interactor_2[1])
+                    @direct_interactors << interactor
                 end
+
+            else # Si campo 1 y campo 2 fuesen mi query: este else es importante por si fuese la query A y fuese A-A
+                next
             end
         end
     end
 
     def add_to_network #Coge los @direct_interactors de la instancia Member y 1)Define su @network como el del objeto Member 2)Los añade al Networks del Member
-        unless @direct_interactors.empty?
-            @direct_interactors.each do |interactor|
+        if @direct_interactors.empty? || @direct_interactors.is_a?(String)
+            return 1
+        end
+        @direct_interactors.each do |interactor|
                 unless self.get_network.network_members.key?(interactor.uniprot_id) #Si ya existe en la red del AT..., pasa. CREO QUE PODRÍAS PREGUNTAR SI ESTÁ ESE OBJETO INTERACTOR DIRECTAMENTE
                     interactor.set_network=(self.get_network)
                     self.get_network.add_member(interactor)
                 end
-            end
         end
     end
 
