@@ -1,37 +1,81 @@
 class Networks
 
-  attr_accessor :network_members
+  attr_accessor :network_members, :number_of_networks
 
-  @@number_of_networks = 0
+  @@total_networks = 0
   @@all_networks = []
 
   def initialize
     @network_members = []
-    @@all_networks << self
+    @@total_networks += 1
+    @@all_networks << self # más optimo un array
   end
 
   def add_member(net_member)
-    @network_members << net_member #unless @network_members.include?(net_member), no hace falta, ya está en la función de recursividad
+    @network_members << net_member
   end
 
-  def self.get_all_networks
-    return @@all_networks
+  def self.get_number_of_nets
+    @@total_networks
   end
 
-  def merge_networks
-    @@all_networks.each do |network|
-      next if network == self
-      if network.network_members.intersection(@network_members) #Si hay miembros en comun entre ambas redes
-        #puts "OJOOOOOOOOOOO"
-        #puts "#{network.network_members} coincide con #{@network_members}"
-        @network_members = @network_members | network.network_members # Se suman los miembros de ambas redes sin repetir, almacenándose en la red que llama a esta función
+  def self.all_networks
+    @@all_networks
+  end
 
-        network.network_members.each do |member| #Actualiza el valor de @network de los miembros absorbidos
-          member.set_network=(self)
+
+  def add_interactors_to_network(net_member)
+    net_member.direct_interactors.each do |interactor|
+        unless @network_members.include?(interactor)
+            #interactor.set_network=(self)
+            add_member(interactor)
         end
-        @@all_networks.delete(network) # Se elimina de @all_networks aquella que ha sido absorbida
+    end 
+  end
+
+
+  def recursive_search(found_proteins, depth)
+    return if depth <= 0 # end searching for interactors when depth is 0
+  
+    list_of_interactors = []
+    found_proteins.each do |protein|
+      protein.find_interactors if protein.direct_interactors.empty? # search only if we have not already searched, if not use what is already in memory (info that we have already extracted, no need to search again!)
+      next if protein.direct_interactors.empty? || protein.direct_interactors.is_a?(String)
+  
+      add_interactors_to_network(protein)
+      list_of_interactors += protein.direct_interactors # use information just searched or that was already stored
+    end
+    
+    recursive_search(list_of_interactors, depth - 1)
+  end
+
+  def merge_with(other_network)
+
+    common_members = @network_members & other_network.network_members # check if there are any common members (this is actually already checked, maybe not necessary)
+
+    if common_members.any?
+      @network_members |= other_network.network_members # |= simulates "union", now the @network_members would have all unique members from both nets
+      @@all_networks.delete(other_network)  # deleting the old net, now we have a new one with its info and new info
+      @@total_networks -= 1 # decrease in 1 the total number of nets, we have just merge 2 into 1
+    end
+  end
+
+
+
+  def create_and_merge
+                                                                        # Lu hace lo de ir absorbiendo redes igual q yo, por eso el select te selecciona aquellso que cumplen la condiicon de abajoo
+    nets_with_common_members = @@all_networks.select do |existing_net|  # iterate through all existing nets y selecciona aquellos que cumplan esa condición
+      existing_net.network_members.any? { |member| self.network_members.include?(member)}  # check if there is any net with common members with the just created net
+    end # El any? mira si alguno de los elementos del @network_members cumple la condición de {"se incluye en la red del objeto que llama a la función"}
+      # it is possible that the new net has common members with more than 1 net, we should merge them all in that case
+
+    if nets_with_common_members.size > 1
+      nets_with_common_members.each do |common_net|  
+        self.merge_with(common_net) unless common_net == self   # if would match to itself, we need to skip because if not we will be deleting the own net we are creating
       end
     end
+
+    return(nets_with_common_members)
   end
 
 end

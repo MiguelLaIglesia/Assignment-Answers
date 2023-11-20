@@ -1,8 +1,5 @@
 require 'json'
 
-#CAMBIOS: def all_members -> self.all_members ,  en add_to_network en   "unless self.get_network.network_members.include?(interactor.uniprot_id)" poner
-# el .include? en vez de .key?
-
 
 class Members
 
@@ -26,13 +23,13 @@ class Members
         @gene_id
     end
 
-    def set_network=(network)
-        @network = network
-    end
+   # def set_network=(network)
+   #     @network = network
+   # end
     
-    def get_network
-        @network
-    end
+   # def get_network
+   #     @network
+   # end
 
     def self.all_coexpresed_members
         @@coexpresed_members
@@ -61,11 +58,12 @@ class Members
         end
     end
 
+    
 
     def find_interactors(intact_address=INTACT_BASE_ADDRESS, species=SPECIES, formato=TAB25_FORMAT)
         intact_address = "#{intact_address}search/interactor/#{@uniprot_id}/?query=#{species}&format=#{formato}"
         response = rest_api_request(intact_address)
-        if response.empty?
+        if response.empty? 
           @direct_interactors = "Response Not Available in IntAct"
           return 1
         end
@@ -73,27 +71,14 @@ class Members
             values = line.chomp.split("\t")
             [0,1].each do |id|
                 interactor = extract_xref(values[id])
-                if !interactor.include?(@uniprot_id) && interactor.match(/[OPQ][0-9][A-Z0-9]{3}[0-9]$/)    # check if it not empty or the query interactor
-                    
+                if !interactor.include?(@uniprot_id) && interactor.match(/[OPQ][0-9][A-Z0-9]{3}[0-9]$/)   # check if it not empty or the query interactor
                     if @@all_members.key?(interactor) # Si ya existe
                         @direct_interactors << @@all_members[interactor]
                     else
                         interactor = self.class.new(uniprot_id: interactor) 
                         @direct_interactors << interactor
-                    end # Si todavía no existe
+                    end 
                 end
-            end
-        end
-    end
-
-    def add_to_network #Coge los @direct_interactors de la instancia Member y 1)Define su @network como el del objeto Member 2)Los añade al Networks del Member
-        if @direct_interactors.empty? || @direct_interactors.is_a?(String)
-            return 1
-        end
-        @direct_interactors.each do |interactor|
-            unless self.get_network.network_members.include?(interactor.uniprot_id)
-                interactor.set_network=(self.get_network)
-                self.get_network.add_member(interactor)
             end
         end
     end
@@ -102,13 +87,13 @@ class Members
         @times_searched += 1
     end
 
-
-
     def eql?(other) 
-        self.uniprot_id == other.uniprot_id if other.is_a?(Networks) # just to make sure we are comparing objects of the same class
+        self.uniprot_id == other.uniprot_id if other.is_a?(Networks) 
     end
 
-    def hash
+    def hash    
         @uniprot_id.hash
     end
+
+
 end
