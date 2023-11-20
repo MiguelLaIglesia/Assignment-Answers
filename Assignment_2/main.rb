@@ -39,8 +39,7 @@ Members.all_coexpresed_members.each do |gene|
   puts
   puts "ANALIZANDO NUEVO MIEMBRO con #{gene.gene_id} y #{gene.uniprot_id}"
   
-  network = Networks.new  # create the new network
-  #gene.set_network=(network)
+  network = Networks.new  # create a seed network
   network.add_member(gene)
   network.recursive_search([gene], DEPTH) # search and assign all the interactors found to this net
 
@@ -48,30 +47,30 @@ Members.all_coexpresed_members.each do |gene|
 
   puts "Este miembro tiene la red #{network} con #{network.network_members.length} miembros"
 
-  #network.network_members.each do |element|
-  #  puts element.uniprot_ids
-  #end
 end
 
+Networks.reduce_networks
 
 File.open('Resultado.txt', 'w') do |file|
 
   file.puts "------------FIN--------------"
   file.puts "TODAS LAS REDES CREADAS SON"
   Networks.all_networks.each do |network|
-    file.puts
-    file.puts "Red #{network} con miembros:"
-  
-    network.network_members.each do |member|
-      if member.gene_id
-        file.puts "#{member.uniprot_id}, aqui está el gen: #{member.gene_id}" 
-      else
-        file.puts member.uniprot_id
+      file.puts
+      file.puts "Red #{network} con número miembros #{network.network_members.length}, los cuales son:"
+    
+      network.network_members.each do |member|
+        if member.gene_id
+          file.puts "#{member.uniprot_id}, aqui está el gen: #{member.gene_id}" 
+        else
+          file.puts member.uniprot_id
+        end
       end
-    end
   end 
   file.puts
   file.puts "Numero de miembros en total: #{Members.all_members.length}"
   file.puts
   file.puts "Número de redes en total: #{Networks.all_networks.length}"
 end
+
+

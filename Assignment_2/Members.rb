@@ -1,4 +1,5 @@
 require 'json'
+#CAMBIOS: times_searched y register_search ya no se necesita, eliminarlos. En find_interactors, poner !interactor.nil? como tercer comprobante &&
 
 
 class Members
@@ -10,7 +11,6 @@ class Members
 
     def initialize( uniprot_id: "IDXXX" )
         @uniprot_id = uniprot_id
-        @times_searched = 0
         @direct_interactors = []
         @@all_members[@uniprot_id] = self
     end
@@ -22,14 +22,6 @@ class Members
     def gene_id #GET gene_id
         @gene_id
     end
-
-   # def set_network=(network)
-   #     @network = network
-   # end
-    
-   # def get_network
-   #     @network
-   # end
 
     def self.all_coexpresed_members
         @@coexpresed_members
@@ -71,7 +63,7 @@ class Members
             values = line.chomp.split("\t")
             [0,1].each do |id|
                 interactor = extract_xref(values[id])
-                if !interactor.include?(@uniprot_id) && interactor.match(/[OPQ][0-9][A-Z0-9]{3}[0-9]$/)   # check if it not empty or the query interactor
+                if !interactor.nil? && !interactor.include?(@uniprot_id) && interactor.match(/[OPQ][0-9][A-Z0-9]{3}[0-9]$/)   # check if it not empty or the query interactor
                     if @@all_members.key?(interactor) # Si ya existe
                         @direct_interactors << @@all_members[interactor]
                     else
@@ -81,10 +73,6 @@ class Members
                 end
             end
         end
-    end
-
-    def register_search
-        @times_searched += 1
     end
 
     def eql?(other) 

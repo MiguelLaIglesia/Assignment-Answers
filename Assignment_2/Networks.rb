@@ -11,6 +11,11 @@ class Networks
     @@all_networks << self # más optimo un array
   end
 
+  def self.all_networks
+    return @@all_networks
+  end
+
+
   def add_member(net_member)
     @network_members << net_member
   end
@@ -19,10 +24,13 @@ class Networks
     @@total_networks
   end
 
-  def self.all_networks
-    @@all_networks
+  def only_one_member?
+    @network_members.length < 2
   end
 
+  def self.reduce_networks
+    @@all_networks = @@all_networks.select { |network| !network.only_one_member? }
+  end
 
   def add_interactors_to_network(net_member)
     net_member.direct_interactors.each do |interactor|
