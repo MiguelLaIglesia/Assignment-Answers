@@ -17,3 +17,61 @@ TASKS:
     *Create a report of which members of the gene list are involved in shared networks, and report the KEGG/GO functional annotations of those networks.
 
 IMPORTANTEE: BONUS MARKS (to get +2 score) if you create a ‘uso-general’ annotation object that can hold any kind of functional annotation
+-----------------------------
+
+                                
+
+http://togows.dbcls.jp/entry/uniprot/Q9SUI4/dr.json : metes uniprot ID, devuelve info como KEGG_ID del gene y los GO terms
+
+http://togows.dbcls.jp/entry/kegg-genes/ath:AT4G12800.json metes KEGG_ID del gene y te da info como el pathway
+
+---------------------BASURA-----------------
+
+
+#https://rest.kegg.jp/conv/genes/uniprot:Q9SUI4 #Convierte uniprot_ID a KEGG_ID
+
+
+
+
+
+
+
+
+
+
+def self.read_from_file(filename) # Leer archivo y crear Members con cada ATG...
+        coexpressed_file = File.open(filename, 'r')
+        coexpressed_file.readlines.each do |line|
+            locus_name=line.chomp
+            togo_address = "http://togows.dbcls.jp/entry/uniprot/#{locus_name}/accessions.json"
+            togo_response = rest_api_request(togo_address)  # search in TOGO db the uniprot id for each locus name
+            result = JSON.parse(togo_response.body)
+            if result.is_a?(Array) && result.any?
+                uniprot_id = result.first.first   
+            else
+                puts "No UniProt entry found for locus #{locus_name}. Please remove this entry from gene list"
+                next
+            end
+            member = self.new(uniprot_id: uniprot_id)   # create new instance of this class for each gene of the list with uniprotid
+            member.gene_id=(locus_name) # and genename
+            @@coexpresed_members << member
+        end
+    end
+
+
+    def self.read_from_file(filename) # Leer archivo y crear Members con cada ATG...
+        coexpressed_file = File.open(filename, 'r')
+        coexpressed_file.readlines.each do |line|
+            locus_name=line.chomp
+            result = togo_search("ebi-uniprot", locus_name)
+            if result.is_a?(Array) && result.any?
+                uniprot_id = result[0]["accessions"][0]
+            else
+                puts "No UniProt entry found for locus #{locus_name}. Please remove this entry from gene list"
+                next
+            end
+            member = self.new(uniprot_id: uniprot_id)   # create new instance of this class for each gene of the list with uniprotid
+            member.gene_id=(locus_name) # and genename
+            @@coexpresed_members << member
+        end
+    end

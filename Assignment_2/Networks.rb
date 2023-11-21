@@ -4,10 +4,13 @@ class Networks
 
   @@total_networks = 0
   @@all_networks = []
+  
 
   def initialize
     @network_members = []
     @@total_networks += 1
+    @network_GOs = {}
+    @network_KEGGs = {}
     @@all_networks << self # más optimo un array
   end
 
@@ -31,6 +34,18 @@ class Networks
   def self.reduce_networks
     @@all_networks = @@all_networks.select { |network| !network.only_one_member? }
   end
+
+  def self.annotate_networks # Anota cada network con el conjunto de GO (ID:term) y KEGG (ID:term) de sus miembros
+    @@all_networks.each do |network|
+      network.network_members.each do |member| #poner un if member tiene 
+        @network_GOs.merge!(member.go_IDs_terms.reject { |go_id, go_term| @network_GOs.key?(go_id) })
+        @network_KEGGs.merge!(member.kegg_ID_pathway.reject { |kegg_id, kegg_term| @network_KEGGs.key?(kegg_id) })
+      end
+    end
+  end
+
+
+
 
   def add_interactors_to_network(net_member)
     net_member.direct_interactors.each do |interactor|
@@ -56,6 +71,7 @@ class Networks
     
     recursive_search(list_of_interactors, depth - 1)
   end
+
 
   def merge_with(other_network)
 

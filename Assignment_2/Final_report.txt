@@ -1,0 +1,17 @@
+This code was created by Miguel La Iglesia Mirones and Lucía Muñoz Gil
+Bioinformatics Programming Challenges Course at MSc Computational Biology (UPM)
+November 2023
+-----------------------------------------------------------------------------------
+
+Protein - protein interaction networks (interactome) final report for genes detailed at ArabidopsisSubNetwork_GeneList.txt file
+
+GLOBAL REPORT FOR ALL PROTEIN-PROTEIN INTERACTION NETWORKS
+Total number of nodes: 187
+Number of nets: 1
+
+FEATURES OF EVERY INTERACTION NETWORK
+
+Network ID 1 (#<Networks:0x0000559f471ccaa0>):
+   Number of members: 178
+   Genes from file part of this network:
+     Gene ID: AT4g09650, Uniprot ID for coded protein: Q9SSS9
