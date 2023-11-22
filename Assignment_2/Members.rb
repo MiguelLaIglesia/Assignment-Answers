@@ -42,7 +42,7 @@ class Members
     # @param gene_name [String] the gene name of the member
     # @return [void]
 
-    def gene_id=(gene_name) #SET gene_id
+    def gene_id=(gene_name)
         @gene_id = gene_name
     end
 
@@ -85,19 +85,19 @@ class Members
         coexpressed_file.readlines.each do |line|
             locus_name=line.chomp
 
-            if locus_name !~ /A[Tt]\d[Gg]\d\d\d\d\d/
+            if locus_name !~ /A[Tt]\d[Gg]\d\d\d\d\d/ # Regex for Arabidopsis thaliana genes
                 abort "Locus name #{locus_name} does not meet the correct format. Please define locus names as AT0g00000"
             end
 
-            result = togo_search("uniprot", locus_name,"/accessions")
+            result = togo_search("uniprot", locus_name,"/accessions") # Search that gene in togo REST API
             if result.is_a?(Array) && result.any?
-                uniprot_id = result.first.first   
+                uniprot_id = result.first.first  # First uniprot ID is stored 
             else
                 puts "No UniProt entry found for locus #{locus_name}. Please remove this entry from gene list"
                 next
             end
-            member = AnnotatedMembers.new(uniprot_id: uniprot_id)   # create new instance of this class for each gene of the list with uniprotid
-            member.gene_id=(locus_name) # and genename
+            member = AnnotatedMembers.new(uniprot_id: uniprot_id) # Create AnnotatedMember for that gene
+            member.gene_id=(locus_name)
             @@coexpresed_members << member
         end
     end
@@ -111,7 +111,7 @@ class Members
     # @return [void]
 
     def find_interactors(intact_address=INTACT_BASE_ADDRESS, species=SPECIES, formato=TAB25_FORMAT)
-        intact_address = "#{intact_address}search/interactor/#{@uniprot_id}/?query=#{species}&format=#{formato}"
+        intact_address = "#{intact_address}search/interactor/#{@uniprot_id}/?query=#{species}&format=#{formato}" # Access through PSICQUIC REST API
         response = rest_api_request(intact_address)
         if response.empty? 
           @direct_interactors = "Response Not Available in IntAct"
@@ -121,7 +121,7 @@ class Members
             values = line.chomp.split("\t")
 
             # Filtering by confidence score
-            instact_miscore = extract_xref(values[14]).to_f 
+            instact_miscore = extract_xref(values[14]).to_f
             next if instact_miscore < 0.5
             
             # Filtering by quality of/trust in tecnology
@@ -131,11 +131,12 @@ class Members
             # Filtering by type of interaction
             type_int = extract_xref(values[11])
             next if type_int != "MI:0915"
-                    
-            [0,1].each do |id|
+            
+            # Select the interactor that is not the query and store it in direct interactors
+            [0,1].each do |id| 
                 interactor = extract_xref(values[id])
-                if !interactor.nil? && !interactor.include?(@uniprot_id) && interactor.match(/[OPQ][0-9][A-Z0-9]{3}[0-9]$/)
-                    if @@all_members.key?(interactor)
+                if !interactor.nil? && !interactor.include?(@uniprot_id) && interactor.match(/[OPQ][0-9][A-Z0-9]{3}[0-9]$/) # Regex for uniprot ID
+                    if @@all_members.key?(interactor) # Asking if that member already exists
                         @direct_interactors << @@all_members[interactor]
                     else
                         interactor = AnnotatedMembers.new(uniprot_id: interactor) 

@@ -111,17 +111,17 @@ class Networks
 
   def annotate_network
 
-    @network_members.each do |member| #poner un if member tiene 
+    @network_members.each do |member| 
 
       if !member.go_IDs_terms.nil? && !member.go_IDs_terms.empty?
         member.go_IDs_terms.each do |key, value|
-          @network_GOs[key] = value unless @network_GOs.key?(key)
+          @network_GOs[key] = value unless @network_GOs.key?(key) # Adding GO if it is not already stored
         end
       end
 
       if !member.kegg_ID_pathway.nil? && !member.kegg_ID_pathway.empty?
         member.kegg_ID_pathway.each do |key, value|
-          @network_KEGGs[key] = value unless @network_KEGGs.key?(key)
+          @network_KEGGs[key] = value unless @network_KEGGs.key?(key) # Adding KEGG if it is not already stored
         end
       end
 
@@ -135,7 +135,7 @@ class Networks
 
   def add_interactors_to_network(net_member)
     net_member.direct_interactors.each do |interactor|
-      unless @network_members.include?(interactor)
+      unless @network_members.include?(interactor) # Adding member if it is not already in network
             #interactor.set_network=(self)
             add_member(interactor)
       end
@@ -152,38 +152,39 @@ class Networks
   
     list_of_interactors = []
     found_proteins.each do |protein|
-      protein.find_interactors if protein.direct_interactors.empty? 
+      protein.find_interactors if protein.direct_interactors.empty?
       next if protein.direct_interactors.empty? || protein.direct_interactors.is_a?(String)
   
       add_interactors_to_network(protein)
-      list_of_interactors += protein.direct_interactors
+      list_of_interactors += protein.direct_interactors # Interactors are stored for calling recursivity later
     end
     
     recursive_search(list_of_interactors, depth - 1)
   end
 
-  # Merge or puts together network members of those networks which have common members
+  # Merges two networks that have common members between them
   #    It merges members that belong to each of both networks. One of the networks is deleted, the other is the one merged
   # @param other_network [<Networks>] the network to merge with the one that is calling the method
   # @return [void]
 
   def merge_with(other_network)
 
-    common_members = @network_members & other_network.network_members
+    common_members = @network_members & other_network.network_members # Tests if there are members in common
     if common_members.any?
       @network_members |= other_network.network_members
-      @@all_networks.delete(other_network)  # deleting the old net, now we have a new one with its info and new info
-      @@total_networks -= 1 # decrease in 1 the total number of nets, we have just merge 2 into 1
+      @@all_networks.delete(other_network)  # Deleting old net: two were merged in one
+      @@total_networks -= 1
     end
   end
 
   # @!method no_params_method
-  # Merges networks with common members in all existing networks.
+  # Merges networks with common members considering all existing networks.
+  #   It calls merge_with to merge two networks with common interactors.
   # @return [void]
 
   def merge_with_common
 
-    nets_with_common_members = @@all_networks.select do |existing_net|  
+    nets_with_common_members = @@all_networks.select do |existing_net|
       existing_net.network_members.any? { |member| self.network_members.include?(member)}
     end
 

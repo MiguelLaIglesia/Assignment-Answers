@@ -44,10 +44,12 @@ end
 
 #----------------- INPUT FILES IN COMMAND LINE ------------------#
 
+# Testing number of arguments equal to 2
 if ARGV.length != 2
   abort "Incorrect number of files passed. Two files names must be specified: input list of genes and name for final_report"
 end
 
+# Testing proper name and order of arguments
 if ARGV[0] == "ArabidopsisSubNetwork_GeneList.txt" && ARGV[1] == "Final_report.txt"
   input_gene_list = ARGV[0]
   output_report_file = ARGV[1]
@@ -59,31 +61,36 @@ end
 #----------------- MAIN CODE ------------------#
 
 puts "Processing #{input_gene_list} file, this might take a while..."
+
+# Calling function for creating members from each gene (line) in input file
 Members.read_from_file(input_gene_list)
 
-# Parameters for this assignment
+# Parameters set for this assignment
 INTACT_BASE_ADDRESS = 'http://www.ebi.ac.uk/Tools/webservices/psicquic/intact/webservices/current/'
 SPECIES = 'species:arabidopsis' 
 TAB25_FORMAT = 'tab25'
 DEPTH = 2
 
-
+# Each member from the coexpressed genes list is iterated
 Members.all_coexpresed_members.each do |gene|
   puts
   puts "Analyzing new gene #{gene.gene_id} with Uniprot ID #{gene.uniprot_id}"
-  network = Networks.new
-  network.add_member(gene)
-  network.recursive_search([gene], DEPTH)
-  network.merge_with_common
+  network = Networks.new # Seed network
+  network.add_member(gene) # Add gene to network
+  network.recursive_search([gene], DEPTH) # Recursive search for the gene
+  network.merge_with_common # Merge that network to the ones already existing
   puts "This member is part of network #{network} with #{network.network_members.length} miembros"
 end
 
+# Calling method to delete networks with only one member
 Networks.reduce_networks
 
+# Each network is annotated with KEGG and GO
 Networks.all_networks.each do |network|
   network.annotate_network
 end
 
+# Report the results to a file
 File.open(output_report_file, 'w') do |file|
 
   file.puts "This code was created by Miguel La Iglesia Mirones and Lucía Muñoz Gil"
@@ -108,7 +115,6 @@ File.open(output_report_file, 'w') do |file|
   Networks.all_networks.each_with_index do |network, idx|
     file.puts
     file.puts "Network ID #{idx + 1} (#{network}):"
-    #file.puts "Network ID #{idx + 1} (#{network}) with members :"
     file.puts "  Number of members: #{network.network_members.length}"
     file.puts "  Genes from file part of this network:"
     

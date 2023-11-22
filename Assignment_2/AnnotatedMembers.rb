@@ -46,27 +46,26 @@ class AnnotatedMembers < Members
     # @return [void]
 
     def annotate_kegg
-        return if @kegg_gene.empty?
+        return if @kegg_gene.empty? # kegg gene ID is required to search for KEGG annotation
 
         result = togo_search("kegg-genes", @kegg_gene)
         if result[0].key?("pathways") && !result[0]["pathways"].nil? && !result[0]["pathways"].empty? 
             @kegg_ID_pathway = result[0]["pathways"]
         end
-        #puts "EL hash es: #{@kegg_ID_pathway}"
     end
 
     # @!method no_params_method
     # Search for GO (IDs and corresponding terms) annotations for a give member.
-    #   It needs searchs only those GO terms referred to biological process.
+    #   It searchs only those GO terms referred to biological process.
     #   It also searchs for the kegg gene ID, which is needed later for kegg annotation.
     # @return [void]
     
     def annotate_GO
         result = togo_search("ebi-uniprot", self.uniprot_id, "/dr")
-        if result[0].key?("GO") && !result[0]["GO"].nil? && !result[0]["GO"].empty?
+        if result[0].key?("GO") && !result[0]["GO"].nil? && !result[0]["GO"].empty? # Controls: many problems parsing data bases
             list_of_GOs = result[0]["GO"]
             list_of_GOs.each do |go|
-                biological_process = go[1].match(/^[P]:/) #molecular functions (F), biological processes (P), and cellular components (C).
+                biological_process = go[1].match(/^[P]:/) # Molecular functions (F), biological processes (P), and cellular components (C).
                 if biological_process
                     id = go[0]
                     term = biological_process.post_match
