@@ -63,7 +63,7 @@ end
 puts "Processing #{input_gene_list} file, this might take a while..."
 
 # Calling function for creating members from each gene (line) in input file
-Members.read_from_file(input_gene_list)
+LuMike_objects::Members.read_from_file(input_gene_list)
 
 # Parameters set for this assignment
 INTACT_BASE_ADDRESS = 'http://www.ebi.ac.uk/Tools/webservices/psicquic/intact/webservices/current/'
@@ -72,10 +72,10 @@ TAB25_FORMAT = 'tab25'
 DEPTH = 2
 
 # Each member from the coexpressed genes list is iterated
-Members.all_coexpresed_members.each do |gene|
+LuMike_objects::Members.all_coexpresed_members.each do |gene|
   puts
   puts "Analyzing new gene #{gene.gene_id} with Uniprot ID #{gene.uniprot_id}"
-  network = Networks.new # Seed network
+  network = LuMike_objects::Networks.new # Seed network
   network.add_member(gene) # Add gene to network
   network.recursive_search([gene], DEPTH) # Recursive search for the gene
   network.merge_with_common # Merge that network to the ones already existing
@@ -83,10 +83,10 @@ Members.all_coexpresed_members.each do |gene|
 end
 
 # Calling method to delete networks with only one member
-Networks.reduce_networks
+LuMike_objects::Networks.reduce_networks
 
 # Each network is annotated with KEGG and GO
-Networks.all_networks.each do |network|
+LuMike_objects::Networks.all_networks.each do |network|
   network.annotate_network
 end
 
@@ -105,14 +105,14 @@ File.open(output_report_file, 'w') do |file|
   file.puts
   file.puts "GLOBAL REPORT FOR ALL PROTEIN-PROTEIN INTERACTION NETWORKS"
   file.puts
-  file.puts "Total number of nodes: #{Members.number_of_members}"
-  file.puts "Number of nets: #{Networks.get_number_of_nets}"
-  file.puts "Genes from list not included in any network: #{Networks.nodes_without_net}"
+  file.puts "Total number of nodes: #{LuMike_objects::Members.number_of_members}"
+  file.puts "Number of nets: #{LuMike_objects::Networks.get_number_of_nets}"
+  file.puts "Genes from list not included in any network: #{LuMike_objects::Networks.nodes_without_net}"
   file.puts
   file.puts "---------------------------------------------------------------------------------------"
   file.puts
   file.puts "FEATURES OF EVERY INTERACTION NETWORK"
-  Networks.all_networks.each_with_index do |network, idx|
+  LuMike_objects::Networks.all_networks.each_with_index do |network, idx|
     file.puts
     file.puts "Network ID #{idx + 1} (#{network}):"
     file.puts "  Number of members: #{network.network_members.length}"

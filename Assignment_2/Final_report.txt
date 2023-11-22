@@ -18,7 +18,7 @@ Genes from list not included in any network: 150
 
 FEATURES OF EVERY INTERACTION NETWORK
 
-Network ID 1 (#<Networks:0x0000559051a54538>):
+Network ID 1 (#<LuMike_objects::Networks:0x000055bd6b8d6430>):
   Number of members: 2
   Genes from file part of this network:
     Gene ID: AT5g04140, Uniprot ID for coded protein: Q9ZNZ7
@@ -50,7 +50,7 @@ Network ID 1 (#<Networks:0x0000559051a54538>):
     GO ID: GO:0009409   Term: response to cold
     GO ID: GO:0035999   Term: tetrahydrofolate interconversion
 
-Network ID 2 (#<Networks:0x00005590519ee6e8>):
+Network ID 2 (#<LuMike_objects::Networks:0x000055bd6b8664c8>):
   Number of members: 3
   Genes from file part of this network:
     Gene ID: AT5g05690, Uniprot ID for coded protein: Q42569
@@ -74,7 +74,7 @@ Network ID 2 (#<Networks:0x00005590519ee6e8>):
     GO ID: GO:0009834   Term: plant-type secondary cell wall biogenesis
     GO ID: GO:0009826   Term: unidimensional cell growth
 
-Network ID 3 (#<Networks:0x0000559051ab46b8>):
+Network ID 3 (#<LuMike_objects::Networks:0x000055bd6b91ebe0>):
   Number of members: 2
   Genes from file part of this network:
     Gene ID: AT4g19170, Uniprot ID for coded protein: O49675
@@ -90,7 +90,7 @@ Network ID 3 (#<Networks:0x0000559051ab46b8>):
     GO ID: GO:0009658   Term: chloroplast organization
     GO ID: GO:0006397   Term: mRNA processing
 
-Network ID 4 (#<Networks:0x000055905149caf0>):
+Network ID 4 (#<LuMike_objects::Networks:0x000055bd6b314b28>):
   Number of members: 6
   Genes from file part of this network:
     Gene ID: AT1g54040, Uniprot ID for coded protein: Q8RY71
@@ -129,7 +129,7 @@ Network ID 4 (#<Networks:0x000055905149caf0>):
     GO ID: GO:0010449   Term: root meristem growth
     GO ID: GO:0022622   Term: root system development
 
-Network ID 5 (#<Networks:0x0000559051a0cd78>):
+Network ID 5 (#<LuMike_objects::Networks:0x000055bd6b89c4b0>):
   Number of members: 2
   Genes from file part of this network:
     Gene ID: AT3g45780, Uniprot ID for coded protein: O48963
@@ -149,7 +149,7 @@ Network ID 5 (#<Networks:0x0000559051a0cd78>):
     GO ID: GO:0009785   Term: blue light signaling pathway
     GO ID: GO:0016567   Term: protein ubiquitination
 
-Network ID 6 (#<Networks:0x00005590519f65a0>):
+Network ID 6 (#<LuMike_objects::Networks:0x000055bd6b86d160>):
   Number of members: 2
   Genes from file part of this network:
     Gene ID: AT4g39710, Uniprot ID for coded protein: Q9SCY3
@@ -162,7 +162,7 @@ Network ID 6 (#<Networks:0x00005590519f65a0>):
     GO ID: GO:0010196   Term: nonphotochemical quenching
     GO ID: GO:0009767   Term: photosynthetic electron transport chain
 
-Network ID 7 (#<Networks:0x0000559051fa2698>):
+Network ID 7 (#<LuMike_objects::Networks:0x000055bd6be2b6b0>):
   Number of members: 487
   Genes from file part of this network:
     Gene ID: AT1g14280, Uniprot ID for coded protein: Q9M9T4
