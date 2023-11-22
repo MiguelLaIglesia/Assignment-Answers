@@ -49,7 +49,6 @@ class Members
 
     def find_interactors(intact_address=INTACT_BASE_ADDRESS, species=SPECIES, formato=TAB25_FORMAT)
         intact_address = "#{intact_address}search/interactor/#{@uniprot_id}/?query=#{species}&format=#{formato}"
-        puts intact_address
         response = rest_api_request(intact_address)
         if response.empty? 
           @direct_interactors = "Response Not Available in IntAct"
@@ -64,7 +63,7 @@ class Members
             
             # Filtering by quality of/trust in tecnology
             interaction_detection_method = extract_xref(values[6])  # get confidence score 
-            #next if interaction_detection_method == "MI:0018"   # exclude two hybrid, not very trustworthy, a lot of false positives
+            next if interaction_detection_method == "MI:0018"   # exclude two hybrid, not very trustworthy, a lot of false positives
 
             # Filtering by type of interaction
             type_int = extract_xref(values[11])  # get type of interaction

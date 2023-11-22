@@ -18,7 +18,6 @@ class AnnotatedMembers < Members
         if result[0].key?("pathways") && !result[0]["pathways"].nil? && !result[0]["pathways"].empty? 
             @kegg_ID_pathway = result[0]["pathways"]
         end
-        puts @kegg_ID_pathway
         #puts "EL hash es: #{@kegg_ID_pathway}"
     end
 
@@ -43,10 +42,6 @@ class AnnotatedMembers < Members
             @kegg_gene = result[0]["KEGG"][0][0]
         end
         
-        puts @go_IDs_terms
-        #puts "Lista de go_IDs: #{@go_IDs}"
-        #puts "Lista de go_terms: #{@go_terms}"
-        #puts "KEGG_ID: #{@kegg_gene}"
     end
 
 end
