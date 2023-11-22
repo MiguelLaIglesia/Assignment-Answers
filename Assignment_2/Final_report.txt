@@ -10,24 +10,15 @@ at ArabidopsisSubNetwork_GeneList.txt file
 
 GLOBAL REPORT FOR ALL PROTEIN-PROTEIN INTERACTION NETWORKS
 
-Total number of nodes: 187
+Total number of nodes: 180
 Number of nets: 1
-Genes from list not included in any network:
-Gene ID:AT4g27030,Uniprot ID for coded protein: Q9SZ42 
-Gene ID:AT5g19120,Uniprot ID for coded protein: Q93VG3 
-Gene ID:AT1g21400,Uniprot ID for coded protein: Q9LPL5 
-Gene ID:AT5g54270,Uniprot ID for coded protein: Q9S7M0 
-Gene ID:AT1g22690,Uniprot ID for coded protein: Q8GWK5 
-Gene ID:AT5g55620,Uniprot ID for coded protein: Q8LC55 
-Gene ID:AT4g05180,Uniprot ID for coded protein: Q41932 
-Gene ID:AT2g13360,Uniprot ID for coded protein: Q56YA5 
-Gene ID:AT2g45170,Uniprot ID for coded protein: Q8S926 
+Genes from list not included in any network: 1
 
 ---------------------------------------------------------------------------------------
 
 FEATURES OF EVERY INTERACTION NETWORK
 
-Network ID 1 (#<Networks:0x00005567b3919658>):
+Network ID 1 (#<Networks:0x000055edf0384788>):
   Number of members: 178
   Genes from file part of this network:
     Gene ID: AT4g09650, Uniprot ID for coded protein: Q9SSS9
