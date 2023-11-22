@@ -10,26 +10,27 @@
 
 class Members
 
-
     # Get/Set the protein's ID
     # @!attribute [rw]
     # @return [String] The Uniprot ID
+
     attr_accessor :uniprot_id
 
     # Get/Set the proteins' direct interactors
     # @!attribute [rw]
-    # @return [array<Members>] The array of direct interactors 
+    # @return [array<Members>] The array of direct interactors
+    
     attr_accessor :direct_interactors
 
     @@coexpresed_members= []
     @@all_members = Hash.new
     @@total_num_members = 0
 
-
     # Create a new instance of Members
   
     # @param uniprot_id [String] the Uniprot ID of the member as a String
     # @return [Members] an instance of Members
+
     def initialize( uniprot_id: "IDXXX" )
         @uniprot_id = uniprot_id
         @direct_interactors = []                # direct_interactors [Array<Members>] the direct interactors of the member as an array of Members' instances
@@ -41,13 +42,14 @@ class Members
     # @param gene_name [String] the gene name of the member
     # @return [void]
 
-    def gene_id=(gene_name)
+    def gene_id=(gene_name) #SET gene_id
         @gene_id = gene_name
     end
 
     # @!method no_params_method
     # Get the gene_id of the member
     # @return [String] the gene ID of the member
+
     def gene_id
         @gene_id
     end
@@ -55,6 +57,7 @@ class Members
     # @!method no_params_method
     # Get all members created with coexpressed gene list
     # @return [Array<Members>] the list of coexpressed members
+
     def self.all_coexpresed_members
         @@coexpresed_members
     end
@@ -76,7 +79,8 @@ class Members
     # Creates members while reading each line of a file, and save them in a class atribute
     # @param filename [String] the name of the file to read gene identifiers
     # @return [void]
-    def self.read_from_file(filename) 
+
+    def self.read_from_file(filename)
         coexpressed_file = File.open(filename, 'r')
         coexpressed_file.readlines.each do |line|
             locus_name=line.chomp
@@ -92,12 +96,13 @@ class Members
                 puts "No UniProt entry found for locus #{locus_name}. Please remove this entry from gene list"
                 next
             end
-            member = AnnotatedMembers.new(uniprot_id: uniprot_id)   
-            member.gene_id=(locus_name)
+            member = AnnotatedMembers.new(uniprot_id: uniprot_id)   # create new instance of this class for each gene of the list with uniprotid
+            member.gene_id=(locus_name) # and genename
             @@coexpresed_members << member
         end
     end
 
+    
     
     # Finds and stores protein interactors for a given protein by accessing IntAct database
     # @param intact_address [String] the IntAct URL
@@ -117,11 +122,11 @@ class Members
 
             # Filtering by confidence score
             instact_miscore = extract_xref(values[14]).to_f 
-            next if instact_miscore < 0.5 
+            next if instact_miscore < 0.5
             
             # Filtering by quality of/trust in tecnology
-            interaction_detection_method = extract_xref(values[6]) 
-            next if interaction_detection_method == "MI:0018"   
+            interaction_detection_method = extract_xref(values[6])
+            next if interaction_detection_method == "MI:0018"
 
             # Filtering by type of interaction
             type_int = extract_xref(values[11])
@@ -140,6 +145,5 @@ class Members
             end
         end
     end
-
 
 end

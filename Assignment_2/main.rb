@@ -1,25 +1,39 @@
+#----------------- REQUIRED MODULES OR CLASSES ------------------#
+
 require 'rest-client'
 require 'json'
 require './Members'
 require './Networks'
 require './AnnotatedMembers'
 
-#------------------MAIN FUNCTIONS --------------------------------------------
+#----------------- MAIN FUNCTIONS ------------------#
+
+# Request programatic access to URL
+# @param address [String] the URL to search
+# @return [void]
 
 def rest_api_request(address)
   RestClient::Request.execute(
     method: :get,
     url: address,
-    headers: {'Accept' => 'application/json'})  # use the RestClient::Request object's method "execute"
+    headers: {'Accept' => 'application/json'})
 end
 
-def extract_xref(element) # syntax of TAB25 <XREF><VALUE>(<DESCRIPTION>)
-  # match regex to get <VALUE>
-  match_data = element.match(/:(\S+)(?:\(|$)/)  # la he cambiado
-  # get the actual value
-  val = match_data[1].gsub(/\A"/, '').gsub(/"\z/, '') if match_data  # get the value if any and if it has quotes then remove them
+# Extracts relevant information from tab25 format, i.e., the detection method used for that interaction
+# @param element [String] the field of tab25 file
+# @return [String] the information extracted
+
+def extract_xref(element)
+  match_data = element.match(/:(\S+)(?:\(|$)/)
+  val = match_data[1].gsub(/\A"/, '').gsub(/"\z/, '') if match_data
   return(val)
 end
+
+# Search in TOGO REST API to access databases' information retrieving a JSON output file
+# @param database [String] the database required
+# @param query [String] the query (i.e. protein identifier or kegg pathway) to search
+# @param field [String] the directory to index in the URL search
+# @return [String] the parsed JSON ouput file with the required information
 
 def togo_search(database,query,field="")
   togo_address = "http://togows.dbcls.jp/entry/#{database}/#{query}#{field}.json"
@@ -28,14 +42,12 @@ def togo_search(database,query,field="")
   return result
 end
 
-#---- INPUT FILE NAMES AS ARGUMENTS FROM COMMAND LINE -------------------------------------------
+#----------------- INPUT FILES IN COMMAND LINE ------------------#
 
-# First warning
-if ARGV.length != 2 # Check for one common human error: not specifying all 4 file names needed for the assignement
+if ARGV.length != 2
   abort "Incorrect number of files passed. Two files names must be specified: input list of genes and name for final_report"
 end
 
-# Second warning: Check for another common human error: not specifying the files in the correct order
 if ARGV[0] == "ArabidopsisSubNetwork_GeneList.txt" && ARGV[1] == "Final_report.txt"
   input_gene_list = ARGV[0]
   output_report_file = ARGV[1]
@@ -44,11 +56,10 @@ else
 end
 
 
-#--------------------------MAIN CODE-------------------------------------------------------------------------------
+#----------------- MAIN CODE ------------------#
 
 puts "Processing #{input_gene_list} file, this might take a while..."
 Members.read_from_file(input_gene_list)
-
 
 # Parameters for this assignment
 INTACT_BASE_ADDRESS = 'http://www.ebi.ac.uk/Tools/webservices/psicquic/intact/webservices/current/'
@@ -60,19 +71,18 @@ DEPTH = 2
 Members.all_coexpresed_members.each do |gene|
   puts
   puts "Analyzing new gene #{gene.gene_id} with Uniprot ID #{gene.uniprot_id}"
-  
-  network = Networks.new  # create a seed network
+  network = Networks.new
   network.add_member(gene)
-  network.recursive_search([gene], DEPTH) # search and assign all the interactors found to this net
-
+  network.recursive_search([gene], DEPTH)
   network.merge_with_common
-
   puts "This member is part of network #{network} with #{network.network_members.length} miembros"
-
 end
 
 Networks.reduce_networks
 
+Networks.all_networks.each do |network|
+  network.annotate_network
+end
 
 File.open(output_report_file, 'w') do |file|
 
@@ -122,5 +132,3 @@ File.open(output_report_file, 'w') do |file|
 
   end 
 end
-
-

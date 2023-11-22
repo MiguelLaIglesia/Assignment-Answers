@@ -8,27 +8,29 @@
 # This can be used to represent members that participate networks considering their functional annotations
 #
 
-
 class AnnotatedMembers < Members
 
     # Get/Set the member GO annotations
     # @!attribute [rw]
     # @return [Hash] The GO ID and GO term
+
     attr_accessor :go_IDs_terms
 
     # Get/Set the KEGG's gene ID
     # @!attribute [rw]
     # @return [String] The gene ID in KEGG
+
     attr_accessor :kegg_gene
 
     # Get/Set the member KEGG annotations
     # @!attribute [rw]
     # @return [Hash] The KEGG ID and KEGG term
-    attr_accessor :kegg_ID_pathway
 
+    attr_accessor :kegg_ID_pathway
 
     # Create a new instance of AnnotatedMembers    
     # @return [AnnotatedMembers] an instance of AnnotatedMembers
+
     def initialize(**args)
         super
         @go_IDs_terms = {}         # go_IDs_terms [Hash] the GO IDs and their corresponding description/term
@@ -42,6 +44,7 @@ class AnnotatedMembers < Members
     # Search for KEGG (IDs and corresponding descriptions of pathways) annotations for a give member.
     #   It needs the kegg gene ID to make the search
     # @return [void]
+
     def annotate_kegg
         return if @kegg_gene.empty?
 
@@ -57,6 +60,7 @@ class AnnotatedMembers < Members
     #   It needs searchs only those GO terms referred to biological process.
     #   It also searchs for the kegg gene ID, which is needed later for kegg annotation.
     # @return [void]
+    
     def annotate_GO
         result = togo_search("ebi-uniprot", self.uniprot_id, "/dr")
         if result[0].key?("GO") && !result[0]["GO"].nil? && !result[0]["GO"].empty?
