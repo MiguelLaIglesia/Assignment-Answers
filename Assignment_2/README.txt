@@ -21,5 +21,5 @@ about wether these genes are linked in same regulatory networks or not. We deter
     -Filters: quality score (<0.5), physical interaction and detection method (MI:0018)
 
 Results show that out of 168 genes, only 12 genes share the same protein - protein interaction network. Besides that, 150 genes are not included in any network,
-that means that no interactions were found for those proteins. Therefore, we suspect that these genes are actually coexpressed, or at least, they are unlinkely to be in
+that means that no interactions were found for those proteins. Therefore, we suspect that these genes are not actually coexpressed, or at least, they are unlinkely to be in
 the same interaction network. Nonentheless, it is true that our results are limited to the data available, after being filtered, in IntAct data base.
