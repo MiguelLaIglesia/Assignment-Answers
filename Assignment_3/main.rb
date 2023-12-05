@@ -1,7 +1,19 @@
+# REVISAR NCBI LISTA IDs
+# exon_sequence = entry_sequence.subseq(start_exon, end_exon): si el exon no cae en seq es que no está?
+# COMO EVITAR OVERLAP DE MISMAS FEATURES
+# REVISAR QUE TODAS LAS LAS FEATURES ANOTADAS TENGAN UN FORMATO ESTÁNDAR EN LA PAGINA ESA
+# EL ID EN ATTRIBUTES ES COMO QUIERAS PERO IGUAL PARA TODOS Y CON UNA ENUMERACIÓN NO?ç
+# Ver SI EL SOURCE ES ESO O EL "annotated by Araport11", yo creo que eso
+# DOMINIOS CTTCTT QUE SE REFIEREN A LA MISMA SECUENCIA, PERO QUE ESTÁN EN 2 EXONES DISTINTOS, CÓMO CONSIDERARLO?
+# UNA SOLA LINEA DEL GFF Y LUEGO EN ATRIBUTES LE METES TODOS LOS EXONES QUE LO TIENEN?
+#Añadir una linea de metadata??
+
+
 #----------------- LOAD EXTERNAL LIBRARIES AND MODULES-------------------------------------------------------------------
 
 require 'bio'
 require 'net/http'
+
 
 #------------------------------ INPUT FILES NAMES AS ARGUMENTS FROM  COMMAND LINE ---------------------------------------
 
@@ -131,10 +143,15 @@ i = 0
 start_gene = nil
 end_gene = nil
 
+source = ""
+entries = []
+k=0
+h=0
+
 # Loop each entry in EMBL file
 embl_file.each_entry do |entry|
 
-    break if i > 2
+    break if i > 20
     i += 1
 
     next unless entry.accession # Lack of accesion is suspicious
@@ -147,17 +164,18 @@ embl_file.each_entry do |entry|
 
     # Anotate sequence chromosome coordinates
     entry_sequence = entry.to_biosequence
-    f1 = Bio::Feature.new('chromosomal_coordinates',entry.definition) # 'feature type' , 'position'
+
+    f1 = Bio::Feature.new('chromosomal_coordinates', entry.definition) # 'feature type' , 'position'
     f1.append(Bio::Feature::Qualifier.new('start', start_entry))
     f1.append(Bio::Feature::Qualifier.new('end', end_entry))
     entry_sequence.features << f1
 
     entry_id = entry_sequence.entry_id
-    puts "AAAAA #{entry_id}"
+
 
     # LOOP FEATURES
     entry.features.each do |feature|
-        featuretype = feature.feature
+        featuretype = feature.feature  
         position = feature.position 
         qual = feature.assoc
 
@@ -165,16 +183,9 @@ embl_file.each_entry do |entry|
             source = qual['db_xref']
         end
 
-        if featuretype == 'CDS' && !qual['codon_start'].empty?
-            phase = qual['codon_start']
-        else
-            phase = '.'
-        end
-
         next unless featuretype == 'exon'
 
         # Get exon ID
-        qual = feature.assoc
         exon_id = qual["note"]
 
         # Get exon coordinates
@@ -188,9 +199,11 @@ embl_file.each_entry do |entry|
         if position.include?('complement')
             regex = regex_complementary
             strand = '-'
+            coordinates_format = "complement(%s)" # %s indicates the substituient, in this case, coordinates range
         else
             regex = regex_positive
             strand = '+'
+            coordinates_format = "%s"
         end
 
         # Find motifs in exon sequence and retrieves the positions (BUT IN EXON SEQUENCE). It works for several matches/motifs in the exon.
@@ -208,30 +221,77 @@ embl_file.each_entry do |entry|
             # Conversion from exon positions to entry sequence positions
             start_motif = start_exon + start_match # +1 por ccs del match, -1 por la suma de exon y match
             end_motif = start_exon + end_match - 1 # -1 por la suma de exon y match
+            #puts "Motif #{entry_sequence.subseq(start_motif, end_motif)} found at position #{start_motif} to #{end_motif} in #{exon_id}"
+           
+            coordinates = coordinates_format % "#{start_motif}..#{end_motif}"
 
-            #puts "Motif #{entry_sequence.subseq(start_motif, end_motif)} found at position #{start_motif} to #{end_motif}"
+            feature_exists = entry_sequence.features.any? { |feature| feature.feature == 'cttctt_repeat' && feature.position == coordinates }
+            next if feature_exists
 
-            # Create new feature for entry sequence with the information of the motif found in exon
-            #if regex == regex_complementary
-                #feature_position = "complement(#{start_motif}..#{end_motif})"
-            #    strand = '-'
-            #else
-                #feature_position = "#{start_motif}..#{end_motif}"
-            #    strand = '+'
-            #end
+            k = k + 1
 
-            f1 = Bio::Feature.new('repeat_region', source) # 'feature type' , 'position'
-            f1.append(Bio::Feature::Qualifier.new('seqid', entry_id))
+            f1 = Bio::Feature.new('cttctt_repeat', coordinates ) # 'feature type' , 'position'
             f1.append(Bio::Feature::Qualifier.new('start', start_motif))
             f1.append(Bio::Feature::Qualifier.new('end', end_motif))
             f1.append(Bio::Feature::Qualifier.new('strand', strand))
-            f1.append(Bio::Feature::Qualifier.new('score', '.')) # Score is normaly given inside "note" in CDS, in this case there is no score for any of them
-            entry_sequence.features << f1                        # Phase is normaly shown as "codon_start" in CDS
-            
+            #f1.append(Bio::Feature::Qualifier.new('score', '.')) # In this case, there is no score value
+            #f1.append(Bio::Feature::Qualifier.new('phase', '.')) # This is only set when feature type is "CDS", not "exon"
+            f1.append(Bio::Feature::Qualifier.new('source', source))
+            f1.append(Bio::Feature::Qualifier.new('SO_Name', 'repeat_region'))
+            entry_sequence.features << f1
+
+
         end
 
     end
+
+    entries << entry_sequence
+
 end
+
+gff = Bio::GFF::GFF3.new
+puts
+puts
+count = 1
+entries.each do |entry|
+    
+    entry.features.each do |feature|
+
+        featuretype = feature.feature
+        position = feature.position 
+        qual = feature.assoc
         
+        next unless featuretype == 'cttctt_repeat'
+        h = h + 1
+        
+        #puts "Chr#{entry.entry_id} #{qual['source'].class} #{qual['SO_Name'].class} #{qual['start'].class} #{qual['end'].class} #{qual['strand'].class} ID=repeat_region_#{count};Name=CTTCTT_motif"
+        
+        attributes = [{"ID" => "repeat_region_#{count}", "Name" => "CTTCTT_motif"}]
+        
+        gff.records << Bio::GFF::GFF3::Record.new(
+            "Chr#{entry.entry_id}",      # seqID
+            qual['source'],     # source
+            qual['SO_Name'],    # feature type
+            qual['start'],            # start
+            qual['end'],          # end
+            nil,          # score
+            qual['strand'],          # strand
+            nil,          # phase
+            attributes[0] # attributes
+         )
+        count += 1
+    end
+end
 
+puts k
+puts h
+puts
+puts
+#gff.records.each do |feature|
+#    puts feature.class
+#end
 
+#puts gff.records.class
+File.open('output_1.gff', 'w') do |file|
+    file.puts gff.to_s
+  end
