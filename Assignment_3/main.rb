@@ -71,6 +71,14 @@ def read_from_file(filename)
     return gene_ids
 end
 
+
+def get_coordinates(coordinates_string)
+    position = coordinates_string.match(/\d+\.\.\d+/)[0]
+
+    start_coordinate = position.split('..')[0].to_i
+    end_coordinate = position.split('..')[1].to_i
+    return start_coordinate, end_coordinate
+end
 #-------------------------------------------MAIN CODE ------------------------------------------------------------------
 
 # 1:  Using BioRuby, examine the sequences of the ~167 Arabidopsis genes from the last assignment by retrieving them from whatever database you wish
@@ -98,10 +106,11 @@ embl_file = Bio::FlatFile.auto('AT_sequences.embl')
 
 #entry = embl_file.next_entry
 
-search = Bio::Sequence::NA.new("cttctt")
-regex = Regexp.new(search.to_re)
-
-i=0
+search_positive = Bio::Sequence::NA.new("cttctt")
+search_complementary = Bio::Sequence::NA.new("aagaag")
+regex_positive = Regexp.new(search_positive.to_re)
+regex_complementary = Regexp.new(search_complementary.to_re)
+i = 0
 
 embl_file.each_entry do |entry|
 
@@ -117,8 +126,8 @@ embl_file.each_entry do |entry|
     match = entry_definition.match(/\d+\.\.\d+/)
     if match
         coordinates = match[0]
-        start_entry = coordinates.split('..')[0]
-        end_entry = coordinates.split('..')[1]
+        start_entry = coordinates.split('..')[0].to_i
+        end_entry = coordinates.split('..')[1].to_i
     end
 
     entry_sequence = entry.to_biosequence
@@ -126,6 +135,9 @@ embl_file.each_entry do |entry|
     f1.append(Bio::Feature::Qualifier.new('start', start_entry))
     f1.append(Bio::Feature::Qualifier.new('end', end_entry))
     entry_sequence.features << f1
+
+    start_entry_internal = 1
+    end_entry_internal = end_entry - start_entry
 
     #puts entry_sequence.length
     #entry_sequence = entry.naseq
@@ -141,16 +153,54 @@ embl_file.each_entry do |entry|
     #puts sequence
     #puts sequence.seq
     #seq = Bio::Sequence::NA.new("atgcatgcaaaa")
-
-    #SACAR COORD TOTALES DE ENTRY DEFINITION Y DE AHI BUSCAR EXON EN LA SECUENCIA (CON SU POSITION) Y VER SI HAY CTTCTT
     entry.features.each do |feature|
-        
         featuretype = feature.feature
 
         next unless featuretype == 'exon'
 
-        position = feature.position # F23J3_4:28298..28420
-        puts position
+        position = feature.position 
+        puts
+        puts "Longitud secuencia #{entry_sequence.length}, Coordenadas internas: #{start_entry_internal}..#{end_entry_internal}"
+        puts "Position exon: #{position}"
+        #next
+
+        # Internal coordinates: to search in the sequence
+        # Universal coordinates: to annotate as new feature
+        # Gene coordinates
+
+        if position.include?('complement')
+            # Las coordenadas de la CADENA NEGATIVA son universal coordinates
+            position = position.match(/\d+\.\.\d+/)[0] # quitas ese 'complement y parentesis'
+            
+            start_exon = position.split('..')[0].to_i
+            end_exon = position.split('..')[1].to_i
+
+            start_exon_internal = start_exon - start_entry 
+            end_exon_internal = end_exon - start_exon + start_exon_internal
+
+        else
+            # Las coordenadas de CADENA POSITIVA son internal coordinates
+            start_exon_internal = position.split('..')[0].to_i
+            end_exon_internal = position.split('..')[1].to_i
+
+            start_exon = start_exon_internal + start_entry - 1
+            end_exon = end_exon_internal + start_entry
+        end
+        
+        # AAAG CTTCTT GGTA
+
+        # TTTC GAAGAA CCAT
+        
+    
+        puts "Coordenadas secuencia: #{start_entry} #{end_entry}"
+        puts "Coordenadas exon universales:#{start_exon} #{end_exon}"
+        puts "Coordenadas exon internas: #{start_exon_internal} #{end_exon_internal}"
+
+        next
+        #exon_sequence = entry_sequence.subseq(start_subsequence,end_subsequence)
+
+        #puts exon_sequence
+
 
         # DIFERENCIAR ENTRE COMPLEMENT O NO PARA HCER SPLIT DISTINTO Y TRABAJAR CON COORDENADAS INTERNAS O TOTALES
         # CREAR OBJETO SECUENCIA DEL EXON CON START Y END, YO DIRIA YA REFERIDA A TOTALES (ENTONCES LA + TRANSFORMAR A TOTALES, EASY)
