@@ -91,7 +91,7 @@ def scan_repetitive_features(filename, coordinates_to_use)
 
     i = 0
 
-    source = ""
+    source = "" # esto es necesario definirlo así pues si no tiene problemas
     entries = []
     k=0
    
@@ -115,18 +115,13 @@ def scan_repetitive_features(filename, coordinates_to_use)
         f1.append(Bio::Feature::Qualifier.new('end', end_entry))
         entry_sequence.features << f1
 
-
-        #puts entry.definition
-        #lengthe = end_entry - start_entry
-        #puts "#{lengthe}"
-        #puts entry_sequence.length
-
         # LOOP FEATURES
         entry.features.each do |feature|
             featuretype = feature.feature  
             position = feature.position 
             qual = feature.assoc
 
+            # Anotate the source for feature
             if featuretype == 'source'
                 source = qual['db_xref']
             end
@@ -186,6 +181,7 @@ def scan_repetitive_features(filename, coordinates_to_use)
                 end_motif = start_exon + end_match - 1 # -1 por la suma de exon y match
                 #puts "Motif #{entry_sequence.subseq(start_motif, end_motif)} found at position #{start_motif} to #{end_motif} in #{exon_id}"
             
+                # If chromosomal coordinates, it recalculates those motif coordinates in the chromosomal coordinates
                 if coordinates_to_use == "chromosomal coordinates"
                     chr_coordinates = entry_sequence.features.find { |feature| feature.feature == 'chromosomal_coordinates' }
                     qual_chr = chr_coordinates.assoc
@@ -260,6 +256,7 @@ def load_to_gff(entries, coordinates_to_use)
             
             attributes = [{"ID" => "repeat_region_#{count}", "Name" => "CTTCTT_motif"}]
             
+            # If chromosomal coordinates, seqid field gives chromosomal coordinates of the entry
             if coordinates_to_use == "chromosomal coordinates"
                 chr_coordinates = entry.features.find { |feature| feature.feature == 'chromosomal_coordinates' }
                 seqid= chr_coordinates.position

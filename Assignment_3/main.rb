@@ -40,22 +40,23 @@ end
 
 # BEFORE EVERYTHING, SEARCHING EMBL FILE (Task 1)
 
-                # 1:  Using BioRuby, examine the sequences of the ~167 Arabidopsis genes from the last assignment by retrieving them from whatever database you wish #
-                # ArabidopsisSubNetwork file -> each gene locus (lines) -> search for embl file -> add to 'AT_sequences.embl'
+        # 1:  Using BioRuby, examine the sequences of the ~167 Arabidopsis genes from the last assignment by retrieving them from whatever database you wish #
+        # ArabidopsisSubNetwork file -> each gene locus (lines) -> search for embl file -> add to 'AT_sequences.embl'
 
-                #puts "Processing #{gene_file} file, this might take a while..."
+        #puts "Processing #{gene_file} file, this might take a while..."
 
-                # Create string with gene IDs from file
-                #gene_ids = read_from_file(gene_file)
+        # Create string with gene IDs from file
+        #gene_ids = read_from_file(gene_file)
 
-                # Only one search with list of IDs
-                #response_body = ncbi_fetch(database = 'ensemblgenomesgene',file_format = 'embl', id = gene_ids)
+        # Only one search with list of IDs
+        #response_body = ncbi_fetch(database = 'ensemblgenomesgene',file_format = 'embl', id = gene_ids)
 
-                #output_file = File.open('AT_sequences.embl', 'w')
-                #output_file.write(response_body)
-                #output_file.close
+        #output_file = File.open('AT_sequences.embl', 'w')
+        #output_file.write(response_body)
+        #output_file.close
 
 # FIRST PART WITH SEQUENCE COORDINATES (Tasks 2, 3, 4a, 4b)
+
 coordinates_to_use = "sequences coordinates"
 entries = scan_repetitive_features('AT_sequences.embl', coordinates_to_use)
 gff = load_to_gff(entries, coordinates_to_use)
