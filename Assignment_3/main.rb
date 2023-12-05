@@ -183,16 +183,19 @@ embl_file.each_entry do |entry|
             source = qual['db_xref']
         end
 
+        # To annotate Arabidopsis thaliana gene as a new feature. Tests if it was not annotated before and if the format of coordinates are correct.
         if featuretype == 'gene' && feature.position.match(/^(complement\()?(\d+\.\.\d+)(\))?$/)
-            
+
+            # Test if that feature already exists
             feature_exists = entry_sequence.features.any? { |feature| feature.feature == 'gene_from_list'}
             next if feature_exists
-            #puts "#{qual['gene']} #{feature.position}"
+
+            # New feature with AT gene name ("AT5G48300")
             f1 = Bio::Feature.new('gene_from_list', qual['gene']) # 'feature type' , 'position'
             entry_sequence.features << f1
-            #puts "#{qual['gene']}"
         end
-
+        
+        # Tests if feature is "exon" and if the coordinates do not correspond to another fragment
         unless featuretype == 'exon' && position.match?(/^(complement\()?(\d+\.\.\d+)(\))?$/)
             next
         end
@@ -237,11 +240,13 @@ embl_file.each_entry do |entry|
            
             coordinates = coordinates_format % "#{start_motif}..#{end_motif}"
 
+            # Tests if that feature has already been annotated, as several exons have same ctttcttt positions
             feature_exists = entry_sequence.features.any? { |feature| feature.feature == 'cttctt_repeat' && feature.position == coordinates }
             next if feature_exists
 
             k = k + 1
 
+            # Anotates new feature
             f1 = Bio::Feature.new('cttctt_repeat', coordinates ) # 'feature type' , 'position'
             f1.append(Bio::Feature::Qualifier.new('start', start_motif))
             f1.append(Bio::Feature::Qualifier.new('end', end_motif))
@@ -257,16 +262,22 @@ embl_file.each_entry do |entry|
 
     end
 
+    # Keeping all entry objects in a list for later
     entries << entry_sequence
 
 end
 
+puts
+puts
+
+# GFF FILE
 gff = Bio::GFF::GFF3.new
-puts
-puts
-count = 1
+
+count = 1 # To annotate attributes
+
 entries.each do |entry|
 
+    # To test if that entry has a repetitive motif annotated, this value True/False will be used later
     feature_exists = entry.features.any? { |feature| feature.feature == 'cttctt_repeat' }
 
     entry.features.each do |feature|
@@ -274,6 +285,7 @@ entries.each do |entry|
         featuretype = feature.feature
         qual = feature.assoc
         
+        # For those without repetitive motif, puts it gene locus ("AT5G48300")
         if featuretype == 'gene_from_list' && !feature_exists
             puts "There are no repetitive cttctt regions found for #{feature.position}"
             break
@@ -311,7 +323,6 @@ puts h
 #    puts feature.class
 #end
 
-#puts gff.records.class
 File.open('output_1.gff', 'w') do |file|
     file.puts gff.to_s
 end
