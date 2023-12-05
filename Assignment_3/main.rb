@@ -102,8 +102,8 @@ def find_motifs (sequence, motif)
           end: end_motif.to_i
         }
   
-        # Move the position forward
-        position = end_motif
+        # Move the position forward, "- 5" allows to detect a domain "CTTCTTCTT", and that will be detected as 2 domains
+        position = end_motif - 5
     end
   
     return matches
@@ -140,8 +140,6 @@ regex_complementary = Regexp.new(search_complementary.to_re)
 
 i = 0
 
-start_gene = nil
-end_gene = nil
 
 source = ""
 entries = []
@@ -151,8 +149,8 @@ h=0
 # Loop each entry in EMBL file
 embl_file.each_entry do |entry|
 
-    break if i > 20
-    i += 1
+    #break if i > 20
+    #i += 1
 
     next unless entry.accession # Lack of accesion is suspicious
 
@@ -170,7 +168,6 @@ embl_file.each_entry do |entry|
     f1.append(Bio::Feature::Qualifier.new('end', end_entry))
     entry_sequence.features << f1
 
-    entry_id = entry_sequence.entry_id
 
 
     # LOOP FEATURES
@@ -258,7 +255,6 @@ entries.each do |entry|
     entry.features.each do |feature|
 
         featuretype = feature.feature
-        position = feature.position 
         qual = feature.assoc
         
         next unless featuretype == 'cttctt_repeat'
@@ -294,4 +290,4 @@ puts
 #puts gff.records.class
 File.open('output_1.gff', 'w') do |file|
     file.puts gff.to_s
-  end
+end
