@@ -7,6 +7,8 @@
 # DOMINIOS CTTCTT QUE SE REFIEREN A LA MISMA SECUENCIA, PERO QUE ESTÁN EN 2 EXONES DISTINTOS, CÓMO CONSIDERARLO?
 # UNA SOLA LINEA DEL GFF Y LUEGO EN ATRIBUTES LE METES TODOS LOS EXONES QUE LO TIENEN?
 #Añadir una linea de metadata??
+# hacer un filtro por "note" del exon que incluya el gen de la lista ? realmente no es necesario pues los de ccs de la secuencia son los q se miraran y por
+#tanto son del gen de la lista.
 
 
 #----------------- LOAD EXTERNAL LIBRARIES AND MODULES-------------------------------------------------------------------
@@ -102,12 +104,15 @@ def find_motifs (sequence, motif)
           end: end_motif.to_i
         }
   
-        # Move the position forward, "- 5" allows to detect a domain "CTTCTTCTT", and that will be detected as 2 domains
+        # Move the position forward, "- 5" allows to detect a domain "CTTCTTCTT", and that will be detected as 2
         position = end_motif - 5
     end
   
     return matches
 end
+
+
+
 #-------------------------------------------MAIN CODE ------------------------------------------------------------------
                 
                 # DESACTIVADO TODO, ACTIVAR PARA ENTREGA
@@ -154,8 +159,8 @@ embl_file.each_entry do |entry|
 
     next unless entry.accession # Lack of accesion is suspicious
 
-    puts
-    puts "NEW ENTRY #{entry.definition}"
+    #puts
+    #puts "NEW ENTRY #{entry.definition}"
     
     # Extract sequence chromosome coordinates from entry.definition
     start_entry, end_entry = get_coordinates(entry.definition)
@@ -168,8 +173,6 @@ embl_file.each_entry do |entry|
     f1.append(Bio::Feature::Qualifier.new('end', end_entry))
     entry_sequence.features << f1
 
-
-
     # LOOP FEATURES
     entry.features.each do |feature|
         featuretype = feature.feature  
@@ -180,7 +183,19 @@ embl_file.each_entry do |entry|
             source = qual['db_xref']
         end
 
-        next unless featuretype == 'exon'
+        if featuretype == 'gene' && feature.position.match(/^(complement\()?(\d+\.\.\d+)(\))?$/)
+            
+            feature_exists = entry_sequence.features.any? { |feature| feature.feature == 'gene_from_list'}
+            next if feature_exists
+            #puts "#{qual['gene']} #{feature.position}"
+            f1 = Bio::Feature.new('gene_from_list', qual['gene']) # 'feature type' , 'position'
+            entry_sequence.features << f1
+            #puts "#{qual['gene']}"
+        end
+
+        unless featuretype == 'exon' && position.match?(/^(complement\()?(\d+\.\.\d+)(\))?$/)
+            next
+        end
 
         # Get exon ID
         exon_id = qual["note"]
@@ -251,12 +266,19 @@ puts
 puts
 count = 1
 entries.each do |entry|
-    
+
+    feature_exists = entry.features.any? { |feature| feature.feature == 'cttctt_repeat' }
+
     entry.features.each do |feature|
 
         featuretype = feature.feature
         qual = feature.assoc
         
+        if featuretype == 'gene_from_list' && !feature_exists
+            puts "There are no repetitive cttctt regions found for #{feature.position}"
+            break
+        end
+
         next unless featuretype == 'cttctt_repeat'
         h = h + 1
         
@@ -279,10 +301,12 @@ entries.each do |entry|
     end
 end
 
+
+
+puts
 puts k
 puts h
-puts
-puts
+
 #gff.records.each do |feature|
 #    puts feature.class
 #end
