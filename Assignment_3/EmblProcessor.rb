@@ -1,38 +1,68 @@
+# == EmblProcessor
+#
+# This is a representation of an EMBL file processor
+# which scans entry features for creating GFF file
+#
+# == Summary
+# 
+# This can be used to represent embl files which will be processed for creating GFF with embl entries features
+#
+
 class EmblProcessor
     
+    # Get/Set total entries in embl file
+    # @!attribute [rw]
+    # @return [String] all entries
     attr_accessor :entries
 
-    # the emblprocessor is the embl flat file so entries are instances of the class entry
+    
+    # Create a new instance of EmblProcessor
+    # @param filename [String] the name of the embl file
+    # @return [EmblProcessor] an instance of EmblProcessor
     def initialize(filename)
-        @entries = scan_repetitive_features(filename)
+        @entries = scan_entries(filename)
     end
 
-    def scan_repetitive_features(filename)
-        embl_file = Bio::FlatFile.auto(filename)    # crea el objeto embl flat file
+    # Scan embl file entries to create  EmblEntry instance and save information about it
+    # @param filename [String] the name of the embl file
+    # @return [entries] all entries in embl file
+    def scan_entries(filename)
+        embl_file = Bio::FlatFile.auto(filename)
         entries = []
 
-        embl_file.each_entry do |entry| # como antes recorre las entrys
+        embl_file.each_entry do |entry|
             next unless entry.accession # Lack of accesion is suspicious
-            start_entry, end_entry = get_coordinates(entry.definition)  #  Extract sequence chromosome coordinates from entry.definition    
-            embl_entry = EmblEntry.new(entry, start_entry, end_entry)   # New EmblEntry instance with: entry and chromosomal coordinates
-            embl_entry.annotate_source_gene
-            entries << embl_entry   # add each entry instance to the array with all the entrys
+            start_entry, end_entry = get_coordinates(entry.definition)  #  Extract sequence chromosome coordinates  
+            embl_entry = EmblEntry.new(entry, start_entry, end_entry)
+            embl_entry.annotate_source_gene # Annotates source and gene for entry
+            entries << embl_entry   # All entries in embl file
         end
         
         return entries
     end  
 
+    # Creates gff for embl file with repetitive regions as features
+    # @param coordinates_to_use [String] the coordinates of reference to consider
+    # @return [gff] the GFF file
     def load_to_gff(coordinates_to_use)
+        
+        report_count = 0 # Number of entries without 'cttctt'
+        entries_without_regions = []
+
         gff = Bio::GFF::GFF3.new
-        count = 1
+        feature_count = 1
     
         @entries.each do |embl_entry|
-          embl_entry.process_cttctt_repeats(coordinates_to_use)
+
+          # Creates new feature with repetitive regions
+          embl_entry.process_cttctt_repeats(coordinates_to_use) 
           
+          # Test if entry has repetitive regions annotated
           feature_exists = embl_entry.entry_sequence.features.any? { |feature| feature.feature == 'cttctt_repeat' }
           
-          if !feature_exists 
-            puts "#{embl_entry.gene_locus} has no exons with the CTTCTT repeat" if coordinates_to_use != "chromosomal coordinates"
+          if !feature_exists
+            entries_without_regions << embl_entry
+            report_count += 1
             next
           end
 
@@ -41,13 +71,14 @@ class EmblProcessor
             next unless feature.feature == 'cttctt_repeat'
     
             qual = feature.assoc
-            attributes = [{ 'ID' => "repeat_region_#{count}", 'Name' => "cttctt_repeat_#{embl_entry.gene_locus}" }]
+            attributes = [{ 'ID' => "repeat_region_#{feature_count}", 'Name' => "cttctt_repeat_#{embl_entry.gene_locus}" }]
     
             seqid = embl_entry.seq_id
-    
+            
+            # New record for GFF file
             gff.records << Bio::GFF::GFF3::Record.new(
               seqid,            # seqID
-              'customized',   # source
+              'programatically',# source
               qual['SO_Name'],  # feature type
               qual['start'],    # start
               qual['end'],      # end
@@ -56,10 +87,21 @@ class EmblProcessor
               nil,              # phase
               attributes[0]     # attributes
             )
-            count += 1
+            feature_count += 1
           end
         end
-    
+
+        # Writes a report with genes without repetitive regions
+        report = File.open("gff_report.txt", "w")
+        report.puts "REPORT OF GENES WITHOUT \'CTTCTT\' REPETITIVE REGIONS AFTER CREATING GFF FILE"
+        report.puts "---------------------------------------------------------------------------"
+        entries_without_regions.each do |entry|
+          report.puts "#{entry.gene_locus}"
+        end
+        report.puts
+        report.puts "TOTAL GENES: #{report_count}"
+        report.close
+
         return gff
       end
 
