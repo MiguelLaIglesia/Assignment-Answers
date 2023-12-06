@@ -1,3 +1,5 @@
+
+
 #------------------------ PUBLIC INSTANCE METHODS -----------------------------------------------------------------------
 
 # Get response from URL
@@ -89,18 +91,12 @@ def scan_repetitive_features(filename, coordinates_to_use)
     regex_positive = Regexp.new(search_positive.to_re)
     regex_complementary = Regexp.new(search_complementary.to_re)
 
-    i = 0
-
     source = "" # esto es necesario definirlo así pues si no tiene problemas
     entries = []
-    k=0
    
 
     # Loop each entry in EMBL file
     embl_file.each_entry do |entry|
-
-        #break if i > 20
-        #i += 1
 
         next unless entry.accession # Lack of accesion is suspicious
 
@@ -188,7 +184,7 @@ def scan_repetitive_features(filename, coordinates_to_use)
                     start_chr = qual_chr['start']
                     end_chr = qual_chr['end']
 
-                    length_motif = end_motif - start_motif
+                    length_motif = end_motif - start_motif + 1
                     start_motif = start_motif + start_chr - 1
                     end_motif = start_motif + length_motif - 1 # PROBAR CON EL EXON_SEQUENCE?    
                     
@@ -201,7 +197,6 @@ def scan_repetitive_features(filename, coordinates_to_use)
                 feature_exists = entry_sequence.features.any? { |feature| feature.feature == 'cttctt_repeat' && feature.position == coordinates }
                 next if feature_exists
 
-                k = k + 1
 
                 # Anotates new feature
                 f1 = Bio::Feature.new('cttctt_repeat', coordinates ) # 'feature type' , 'position'
@@ -229,7 +224,6 @@ end
 
 def load_to_gff(entries, coordinates_to_use)
     gff = Bio::GFF::GFF3.new
-    h=0
     count = 1 # To annotate attributes
 
     entries.each do |entry|
@@ -250,23 +244,18 @@ def load_to_gff(entries, coordinates_to_use)
             end
 
             next unless featuretype == 'cttctt_repeat'
-            h = h + 1
             
             #puts "Chr#{entry.entry_id} #{qual['source'].class} #{qual['SO_Name'].class} #{qual['start'].class} #{qual['end'].class} #{qual['strand'].class} ID=repeat_region_#{count};Name=CTTCTT_motif"
             
-            attributes = [{"ID" => "repeat_region_#{count}", "Name" => "CTTCTT_motif"}]
+            attributes = [{"ID" => "repeat_region_#{count}", "Name" => "cttctt_repeat"}]
             
             # If chromosomal coordinates, seqid field gives chromosomal coordinates of the entry
-            if coordinates_to_use == "chromosomal coordinates"
-                chr_coordinates = entry.features.find { |feature| feature.feature == 'chromosomal_coordinates' }
-                seqid= chr_coordinates.position
-            else
-                seqid = "Chr#{entry.entry_id}"
-            end
+
+            seqid = entry.entry_id
 
             gff.records << Bio::GFF::GFF3::Record.new(
                 seqid,      # seqID
-                qual['source'],     # source
+                'customized',     # source    qual['source']
                 qual['SO_Name'],    # feature type
                 qual['start'],            # start
                 qual['end'],          # end
@@ -292,3 +281,4 @@ def write_gff(gff, coordinates_to_use)
         file.puts gff.to_s
     end
 end
+

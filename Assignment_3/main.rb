@@ -1,15 +1,5 @@
-# REVISAR NCBI LISTA IDs
-# exon_sequence = entry_sequence.subseq(start_exon, end_exon): si el exon no cae en seq es que no está?
-# COMO EVITAR OVERLAP DE MISMAS FEATURES
-# REVISAR QUE TODAS LAS LAS FEATURES ANOTADAS TENGAN UN FORMATO ESTÁNDAR EN LA PAGINA ESA
-# EL ID EN ATTRIBUTES ES COMO QUIERAS PERO IGUAL PARA TODOS Y CON UNA ENUMERACIÓN NO?ç
-# Ver SI EL SOURCE ES ESO O EL "annotated by Araport11", yo creo que eso
-# DOMINIOS CTTCTT QUE SE REFIEREN A LA MISMA SECUENCIA, PERO QUE ESTÁN EN 2 EXONES DISTINTOS, CÓMO CONSIDERARLO?
-# UNA SOLA LINEA DEL GFF Y LUEGO EN ATRIBUTES LE METES TODOS LOS EXONES QUE LO TIENEN?
-#Añadir una linea de metadata??
-# hacer un filtro por "note" del exon que incluya el gen de la lista ? realmente no es necesario pues los de ccs de la secuencia son los q se miraran y por
-#tanto son del gen de la lista.
-#CONFIRMAR SOURCE Y ATTRIBUTES y ARREGLAR LO DE "source = "" AL ppio"
+#en el Name de attribute poner "cttctt_repeat_AT1G23435"
+# Anotamos exones?
 
 
 
