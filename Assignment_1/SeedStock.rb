@@ -1,3 +1,11 @@
+=begin
+  -----------------------------------------------------------------------------------------------------
+    This code was created IN COLLABORATION with my colleague Lucía Muñoz Gil.
+    Miguel La Iglesia Mirones, Assignment 1, Bioinformatic Programming Challenges.
+    Master in Computational Biology, UPM.
+  ---------------------------------------------------------------------------------------------------
+=end
+
 # Class SeedStock represents the different seed stocks with their relevant information. 
 # It allows to update the grams remmaining and last day planted.
 

@@ -1,3 +1,11 @@
+=begin
+  -----------------------------------------------------------------------------------------------------
+    This code was created IN COLLABORATION with my colleague Lucía Muñoz Gil.
+    Miguel La Iglesia Mirones, Assignment 1, Bioinformatic Programming Challenges.
+    Master in Computational Biology, UPM.
+  ---------------------------------------------------------------------------------------------------
+=end
+
 # Class HybridCross represents the different seed stock crosses with their relevant information.
 # It allows to calculate chi-square in a cross.
 
